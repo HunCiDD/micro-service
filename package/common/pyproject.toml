@@ -1,0 +1,45 @@
+[tool.poetry]
+name = "common"
+version = "0.1.0"
+description = ""
+authors = ["HunCiDD <308997460@qq.com>"]
+readme = "README.md"
+packages = [{ include = "common", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pydantic = "^2.10.6"
+sqlalchemy = "^2.0.38"
+pandas = "^2.2.3"
+loguru = "^0.7.3"
+pyyaml = "^6.0.2"
+celery = "^5.4.0"
+fastapi = "^0.115.8"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+ruff = "^0.9.7"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[[tool.poetry.source]]
+name = "tsinghua"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+priority = "primary"
+
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+include = ["pyproject.toml", "src/**/*.py", "test/**/*.py"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "single"
