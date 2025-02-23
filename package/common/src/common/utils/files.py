@@ -12,7 +12,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 import yaml
 from defusedxml import ElementTree
 
-from src.utils.data import JsonEncoder
+from data import JsonEncoder
 
 __all__ = [
     'FileException',
