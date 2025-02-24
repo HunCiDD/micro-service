@@ -3,7 +3,7 @@ from collections import UserDict
 from pathlib import Path
 from typing import Callable, List, Optional, Union
 
-from .files import File
+from .files.base import File
 
 
 class ConfigsDict(UserDict):
@@ -22,7 +22,7 @@ class EnvConfigsDict(ConfigsDict):
 
     def _load(self):
         for key in self._keys:
-            value = os.getenv(key, '').strip()
+            value = os.getenv(key, "").strip()
             self.data[key] = value
 
         if self._hook:

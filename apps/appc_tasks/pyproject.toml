@@ -1,0 +1,26 @@
+[project]
+name = "appc-tasks"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12.1"
+dependencies = [
+    "common"
+]
+
+
+[tool.uv.sources]
+common = { workspace = true }
+
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+include = ["pyproject.toml", "**/*.py"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "single"

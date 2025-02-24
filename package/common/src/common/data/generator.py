@@ -1,8 +1,9 @@
 # 数据生成器
 __all__ = [
-    'RandomStringGenerator',
-    'RandomFloatGenerator',
-    'UuidGenerator',
+    "RandomStringGenerator",
+    "RandomFloatGenerator",
+    "RandomIntGenerator",
+    "UuidGenerator",
 ]
 
 import secrets
@@ -22,7 +23,7 @@ class RandomStringGenerator:
     @staticmethod
     def by_length(length: int = 10) -> str:
         alphabet = string.ascii_letters + string.digits
-        return ''.join(secrets.choice(alphabet) for _ in range(length))
+        return "".join(secrets.choice(alphabet) for _ in range(length))
 
 
 class RandomFloatGenerator:
@@ -38,9 +39,9 @@ class UuidGenerator:
     @staticmethod
     def by_value(value: str, random: bool = False) -> UUID:
         random_num = RandomIntGenerator.by_range(0, 10000) if random else 0
-        return uuid5(NAMESPACE_DNS, f'{value}{random_num}')
+        return uuid5(NAMESPACE_DNS, f"{value}{random_num}")
 
     @staticmethod
     def by_time(random: bool = False) -> UUID:
         random_num = RandomIntGenerator.by_range(0, 10000) if random else 0
-        return uuid5(NAMESPACE_DNS, f'{time.time()}{random_num}')
+        return uuid5(NAMESPACE_DNS, f"{time.time()}{random_num}")

@@ -1,0 +1,34 @@
+[project]
+name = "common"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12.1"
+dependencies = [
+    "defusedxml>=0.7.1",
+    "loguru>=0.7.3",
+    "pandas>=2.2.3",
+    "py4j>=0.10.9.9",
+    "pydantic>=2.10.6",
+    "pyyaml>=6.0.2",
+    "sqlalchemy>=2.0.38",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
+    "ruff>=0.9.7",
+]
+
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+include = ["pyproject.toml", "**/*.py"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "single"

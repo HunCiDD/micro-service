@@ -1,0 +1,1 @@
+APP_NAME = 'APPC_TASKS'

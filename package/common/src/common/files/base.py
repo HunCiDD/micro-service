@@ -1,40 +1,29 @@
 from __future__ import annotations
 
-import json
+__all__ = [
+    "FileException",
+    "File",
+    "Dir",
+]
+
 import os
 import shutil
 import stat
-from configparser import ConfigParser
 from functools import reduce
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Union
 
-import yaml
-from defusedxml import ElementTree
-
-from data import JsonEncoder
-
-__all__ = [
-    'FileException',
-    'File',
-    'Dir',
-    'JsonFile',
-    'IniFile',
-    'XmlFile',
-    'YamlFile',
-]
-
 MODES = stat.S_IWUSR | stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH
 FLAGS = {
-    'r': os.O_RDONLY,
-    'rb': os.O_RDONLY,
-    'w': os.O_WRONLY | os.O_CREAT | os.O_TRUNC,
-    'wb': os.O_WRONLY | os.O_CREAT | os.O_TRUNC,
-    'w+': os.O_RDWR | os.O_CREAT | os.O_TRUNC,
-    'a': os.O_WRONLY | os.O_CREAT | os.O_APPEND,
-    'ab': os.O_WRONLY | os.O_CREAT | os.O_APPEND,
-    'a+': os.O_RDWR | os.O_CREAT | os.O_APPEND,
-    'ab+': os.O_RDWR | os.O_CREAT | os.O_APPEND,
+    "r": os.O_RDONLY,
+    "rb": os.O_RDONLY,
+    "w": os.O_WRONLY | os.O_CREAT | os.O_TRUNC,
+    "wb": os.O_WRONLY | os.O_CREAT | os.O_TRUNC,
+    "w+": os.O_RDWR | os.O_CREAT | os.O_TRUNC,
+    "a": os.O_WRONLY | os.O_CREAT | os.O_APPEND,
+    "ab": os.O_WRONLY | os.O_CREAT | os.O_APPEND,
+    "a+": os.O_RDWR | os.O_CREAT | os.O_APPEND,
+    "ab+": os.O_RDWR | os.O_CREAT | os.O_APPEND,
 }
 
 
@@ -52,7 +41,7 @@ class Base:
         self.suffix = self._path.suffix
 
         if self.ALLOWED_SUFFIX and self.suffix not in self.ALLOWED_SUFFIX:
-            raise FileException(f'Invalid suffix: {self.suffix}')
+            raise FileException(f"Invalid suffix: {self.suffix}")
 
     def __str__(self) -> str:
         return str(self._path)
@@ -86,7 +75,7 @@ class Base:
 
 
 class File(Base):
-    def open(self, mode: str = 'r', encoding='utf-8'):
+    def open(self, mode: str = "r", encoding="utf-8"):
         """
         安全方式打开文件
         :param mode:
@@ -94,27 +83,31 @@ class File(Base):
         :return:
         """
         if mode not in FLAGS:
-            raise FileException(f'Invalid mode: {mode}')
-        if 'b' in mode:
+            raise FileException(f"Invalid mode: {mode}")
+        if "b" in mode:
             fp = os.fdopen(os.open(self._path, FLAGS[mode], MODES), mode)
         else:
-            fp = os.fdopen(os.open(self._path, FLAGS[mode], MODES), mode, encoding=encoding)
+            fp = os.fdopen(
+                os.open(self._path, FLAGS[mode], MODES), mode, encoding=encoding
+            )
         return fp
 
-    def read(self, mode: str = 'r', encoding='utf-8', size: int = -1) -> str:
+    def read(self, mode: str = "r", encoding="utf-8", size: int = -1) -> str:
         with self.open(mode, encoding) as fp:
             return fp.read(size)
 
-    def write(self, data: Any, mode: str = 'w', encoding='utf-8', size: int = -1):
+    def write(self, data: Any, mode: str = "w", encoding="utf-8", size: int = -1):
         with self.open(mode, encoding) as fp:
             if size > 0:
                 fp.truncate(size)
             fp.write(data)
 
-    def load(self, encoding: str = 'utf-8', hook: Optional[Callable] = None) -> Dict[str, Any]:
-        raise FileException('Load not support')
+    def load(
+        self, encoding: str = "utf-8", hook: Optional[Callable] = None
+    ) -> Dict[str, Any]:
+        raise FileException("Load not support")
 
-    def dump(self, data: Dict[str, Any], encoding: str = 'utf-8'): ...
+    def dump(self, data: Dict[str, Any], encoding: str = "utf-8"): ...
 
 
 class Dir(Base):
@@ -132,7 +125,9 @@ class Dir(Base):
     def count(self) -> int:
         return len(self.iters())
 
-    def iters_level(self, cur_level: int = 0, max_level: int = -1) -> List[Union[Dir, File]]:
+    def iters_level(
+        self, cur_level: int = 0, max_level: int = -1
+    ) -> List[Union[Dir, File]]:
         items = []
         for _path in self._path.iterdir():
             if cur_level > max_level >= 0:
@@ -191,67 +186,3 @@ class Dir(Base):
     def relative_root_dir(self, _path: Union[Dir, File, str, Path]) -> str:
         re_path = self.relative_to(_path)
         return re_path.parts[0]
-
-
-class JsonFile(File):
-    ALLOWED_SUFFIX = ('.json',)
-
-    def load(self, encoding: str = 'utf-8', hook: Optional[Callable] = None) -> Dict[str, Any]:
-        data = {}
-        with self.open('r', encoding=encoding) as fp:
-            data.update(json.load(fp))
-
-            if hook:
-                data = hook(data)
-        return data
-
-    def dump(self, data: Dict[str, Any], encoding: str = 'utf-8'):
-        with self.open('w', encoding=encoding) as fp:
-            json.dump(data, fp, indent=4, cls=JsonEncoder)
-
-
-class IniFile(File):
-    ALLOWED_SUFFIX = ('.ini', '.conf', '.env')
-
-    def load(self, encoding: str = 'utf-8', hook: Optional[Callable] = None) -> Dict[str, Any]:
-        data = {}
-        parser = ConfigParser()
-        parser.read(self._path, encoding=encoding)
-        for section in parser.sections():
-            section_data = {}
-            for key, value in parser.items(section):
-                section_data[key] = value
-            data[section] = section_data
-
-        if hook:
-            data = hook(data)
-        return data
-
-    def dump(self, data: Dict[str, Any], encoding: str = 'utf-8'):
-        raise FileException('Dump not support')
-
-
-class XmlFile(File):
-    ALLOWED_SUFFIX = ('.xml',)
-
-    def load(self, encoding: str = 'utf-8', hook: Optional[Callable] = None) -> Dict[str, Any]:
-        _parser = ElementTree.XMLParser(encoding=encoding, forbid_dtd=True, forbid_entities=True)
-        data = {}
-        with self.open('r', encoding=encoding) as fp:
-            tree = ElementTree.parse(fp, parser=_parser)
-            if hook:
-                data = hook(data, tree)
-        return data
-
-
-class YamlFile(File):
-    ALLOWED_SUFFIX = ('.yaml',)
-
-    def load(self, encoding: str = 'utf-8', hook: Optional[Callable] = None) -> Dict[str, Any]:
-        data = {}
-        with self.open('r', encoding=encoding) as fp:
-            data.update(yaml.safe_load(fp))
-
-            if hook:
-                data = hook(data)
-        return data
